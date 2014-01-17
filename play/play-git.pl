@@ -23,6 +23,10 @@ use File::Path          # Create or remove directory trees
 
 ## use
 #============================================================================#
+# GLOBALS   
+my $rhea_prompt     = q{#$ };
+
+#----------------------------------------------------------------------------#
 say "$0 Running...";
 
 # scratch variables
@@ -33,7 +37,7 @@ my @rv          ;
 # Make a temporary working dir for fooling around in.
 my $rootdir     = cwd();
 my $workdir     = File::Spec->catdir( $rootdir, 'rheatmp' );
-remove_tree( $workdir, { safe => 1 } );     # don't try to chmod before delete
+remove_tree( $workdir, { safe => 0 } ); # must chmod to rm read-only files
 mkdir $workdir 
     or die "Failed to mkdir $workdir";
 chdir $workdir;
@@ -41,6 +45,18 @@ say "Working in $workdir";
 _shell( 'ls -lA' );
 
 _shell( 'git init' );
+_shell( 'git status' );
+
+_shell( 'touch dummy' );
+_shell( 'git status' );
+
+_shell( 'git add .' );                          # stage
+_shell( 'git status' );
+
+_shell( 'git commit -a -m "Dummy commit."' );   # commit
+
+_shell( 'git status' );
+#~ _shell( 'gitk' );
 
 say "Done.";
 exit;
@@ -54,7 +70,10 @@ exit;
 # Just shell out and allow caller to see output. (transparent)
 # 
 sub _shell {
-    system shift;
+    my $line    = shift;
+    
+    say $rhea_prompt . $line;
+    system $line;
     
 }; ## _shell
 
