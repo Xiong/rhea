@@ -23,6 +23,7 @@ sym/
 sym
 
 # Ignore temporary stuff
+rheatmp/
 tmp/
 *.tmp
 *.pm.html
