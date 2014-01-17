@@ -10,7 +10,6 @@ BEGIN {
 
 BEGIN {
 use App::Rhea;          # Set up a Minetest server using git
-use Git;                # Perl interface to the Git version control system
 }
 
 pass( 'Use modules.' );
