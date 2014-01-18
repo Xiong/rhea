@@ -37,11 +37,13 @@ my $git_name        = 'git';
 # 
 sub _git {
     my @args    = @_ or ();
-    my $cmd     = join q{ }, @args;
+#~     my $cmd     = join q{ }, @args;
     
     system $git_name, @args;
     
-    return $?;
+    my $status  = ($? >> 8);
+    
+    return $status;
 }; ## _git
 
 #=========# INTERNAL ROUTINE

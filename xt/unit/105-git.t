@@ -16,6 +16,8 @@ my $QRFALSE      = $App::Rhea::QRFALSE   ;
 my $unit        = q{App::Rhea::_git};
 my $base        = $unit . q{: };
 
+diag(q{&### This test normally generates much console output. ###&});
+
 #----------------------------------------------------------------------------#
 # CONSTANTS
 
@@ -29,14 +31,36 @@ my $base        = $unit . q{: };
 my @td  = (
     
     {
+        -case       => 'no args',       # emits usage; considered an error
+        -args       => [
+                    ],
+        -need       => 1,               # shell exit
+    },
+    
+    {
+        -case       => 'setup',
+        -code       => q{
+                        system(qw| mkdir rheatmp    |);
+                        chdir 'rheatmp'               ;
+                        system(qw| git init         |);
+                    },
+        -need       => 0,               # shell exit
+    },
+    
+    {
         -case       => 'status',
         -args       => [
                         'status',
                     ],
-        -need       => 0,               # return value
-        -outlike    => words(qw(
-                        branch master nothing clean
-                    )),
+        -need       => 0,               # shell exit
+    },
+    
+    {
+        -case       => 'version',
+        -args       => [
+                        '--version',
+                    ],
+        -need       => 0,               # shell exit
     },
     
     
