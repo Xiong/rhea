@@ -49,6 +49,31 @@ sub _git {
 
 #=========# INTERNAL ROUTINE
 #
+#~     _git_qx( @args );
+#       
+# Parms     : array of strings
+# Returns   : 
+# Output    : ---
+# 
+# Execution of arbitrary git command...
+#   ... with STDOUT, STDERR captured.
+# 
+sub _git_qx {
+    my @args    = @_ or ();
+    my $cmd     = join q{ }, $git_name, @args;
+    
+    my $stdout  = `$cmd`;
+    
+    my $status  = ($? >> 8);
+    
+    return {
+        stdout  => $stdout,
+        exit    => $status,
+    };
+}; ## _git_qx
+
+#=========# INTERNAL ROUTINE
+#
 #~     _do_();     # short
 #       
 # ____

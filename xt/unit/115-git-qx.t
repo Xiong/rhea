@@ -16,7 +16,7 @@ my $QRFALSE      = $App::Rhea::QRFALSE   ;
 my $unit        = q{App::Rhea::_git_qx};
 my $base        = $unit . q{: };
 
-diag(q{&### This test normally generates much console output. ###&});
+#~ diag(q{&### This test normally generates much console output. ###&});
 
 #----------------------------------------------------------------------------#
 # CONSTANTS
@@ -34,8 +34,15 @@ my @td  = (
         -case       => 'no args',       # emits usage; considered an error
         -args       => [
                     ],
-        -need       => 1,               # shell exit
+        -punt       => {
+                        exit    => 1,               # shell exit
+                        stdout  => words(qw|
+                            usage git
+                        |),
+                    }
     },
+    
+    { -done => 1 }, # # # # # # # # # # # # DONE # # # # # # # # # # # # # # #
     
     {
         -case       => 'setup',
@@ -108,6 +115,7 @@ for (@td) {
         my $deep        = $t{-deep};    # traverse structure (e.g., hashref)
         my $outlike     = $t{-outlike}; # STDOUT regex supplied
         my $errlike     = $t{-errlike}; # STDERR regex supplied
+        my $punt        = $t{-punt};    # application-specific checks
                 
         # set up code under test
         if ( not $code ) {
@@ -169,6 +177,18 @@ for (@td) {
             $got            = $stderr;
             $want           = $errlike;
             like( $got, $want, $diag );
+        }; 
+        
+        # Application-specific!
+        if ( defined $punt ) {
+            $diag           = 'punt-stdout';
+            $got            = $rv[0]->{stdout};
+            $want           = $punt->{stdout};
+            like( $got, $want, $diag );
+            $diag           = 'punt-exit';
+            $got            = $rv[0]->{exit};
+            $want           = $punt->{exit};
+            is( $got, $want, $diag );
         }; 
         
         # Extra-verbose dump optional for test script debug.
