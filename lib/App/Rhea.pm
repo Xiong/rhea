@@ -34,6 +34,7 @@ my $git_name        = 'git';
 # 
 # Pass-through execution of arbitrary git command...
 #   ... not otherwise managed.
+#   This is the mode suitable for interactive commands.
 # 
 sub _git {
     my @args    = @_ or ();
