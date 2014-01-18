@@ -13,11 +13,48 @@ use version; our $VERSION = qv('v0.0.0');
 
 ## use
 #============================================================================#
+# GLOBALS
 
-# Pseudo-globals
+# Compiled regexes
+our $QRFALSE        = qr/\A0?\z/            ;
+our $QRTRUE         = qr/\A(?!$QRFALSE)/    ;
 
-## pseudo-globals
+# git-specific
+my $git_name        = 'git';
+
 #----------------------------------------------------------------------------#
+
+#=========# INTERNAL ROUTINE
+#
+#~     _git( @args );
+#       
+# Parms     : array of strings
+# Returns   : shell exit code
+# Output    : passes STDOUT, STDERR untouched
+# 
+# Pass-through execution of arbitrary git command...
+#   ... not otherwise managed.
+# 
+sub _git {
+    my @args    = @_ or ();
+    my $cmd     = join q{ }, @args;
+    
+    system $git_name, @args;
+    
+    return $?;
+}; ## _git
+
+#=========# INTERNAL ROUTINE
+#
+#~     _do_();     # short
+#       
+# ____
+# 
+sub _do_ {
+    
+    
+    
+}; ## _do_
 
 
 
