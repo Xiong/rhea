@@ -13,11 +13,76 @@ use version; our $VERSION = qv('v0.0.0');
 
 ## use
 #============================================================================#
+# GLOBALS
 
-# Pseudo-globals
+# Compiled regexes
+our $QRFALSE        = qr/\A0?\z/            ;
+our $QRTRUE         = qr/\A(?!$QRFALSE)/    ;
 
-## pseudo-globals
+# git-specific
+my $git_name        = 'git';
+
 #----------------------------------------------------------------------------#
+
+#=========# INTERNAL ROUTINE
+#
+#~     _git( @args );
+#       
+# Parms     : array of strings
+# Returns   : shell exit code
+# Output    : passes STDOUT, STDERR untouched
+# 
+# Pass-through execution of arbitrary git command...
+#   ... not otherwise managed.
+#   This is the mode suitable for interactive commands.
+# 
+sub _git {
+    my @args    = @_ or ();
+#~     my $cmd     = join q{ }, @args;
+    
+    system $git_name, @args;
+    
+    my $status  = ($? >> 8);
+    
+    return $status;
+}; ## _git
+
+#=========# INTERNAL ROUTINE
+#
+#~     _git_qx( @args );
+#       
+# Parms     : array of strings
+# Returns   : 
+# Output    : ---
+# 
+# Execution of arbitrary git command...
+#   ... with STDOUT, STDERR captured.
+# 
+sub _git_qx {
+    my @args    = @_ or ();
+    my $cmd     = join q{ }, $git_name, @args;
+    
+    my $stdout  = `$cmd`;
+    
+    my $status  = ($? >> 8);
+    
+    return {
+        stdout  => $stdout,
+        exit    => $status,
+    };
+}; ## _git_qx
+
+#=========# INTERNAL ROUTINE
+#
+#~     _do_();     # short
+#       
+# ____
+# 
+sub _do_ {
+    
+    
+    
+}; ## _do_
 
 
 
