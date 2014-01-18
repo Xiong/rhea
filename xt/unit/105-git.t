@@ -106,41 +106,41 @@ for (@td) {
         };
         
         # conditional checks
-        if ( $evalerr and not $die ) {
+        if ( $evalerr and not defined $die ) {
             $diag           = 'eval error';
             fail( $diag );
         };
-        if ($die) {
+        if ( defined $die ) {
             $diag           = 'should throw';
             $got            = $evalerr;
             $want           = $die;
             like( $got, $want, $diag );
         };
-        if ($like) {
+        if ( defined $like ) {
             $diag           = 'return-like';
             $got            = join qq{\n}, @rv;
             $want           = $like;
             like( $got, $want, $diag );
         }; 
-        if ($need) {
+        if ( defined $need ) {
             $diag           = 'return-is';
             $got            = $rv[0];
             $want           = $need;
             is( $got, $want, $diag );
         };
-        if ($deep) {
+        if ( defined $deep ) {
             $diag           = 'return-is-deeply';
             $got            = $rv[0];
             $want           = $deep;
             is_deeply( $got, $want, $diag );
         };
-        if ($outlike) {
+        if ( defined $outlike ) {
             $diag           = 'stdout-like';
             $got            = $stdout;
             $want           = $outlike;
             like( $got, $want, $diag );
         }; 
-        if ($errlike) {
+        if ( defined $errlike ) {
             $diag           = 'stderr-like';
             $got            = $stderr;
             $want           = $errlike;
