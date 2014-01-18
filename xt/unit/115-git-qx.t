@@ -16,14 +16,13 @@ my $QRFALSE      = $App::Rhea::QRFALSE   ;
 my $unit        = q{App::Rhea::_git_qx};
 my $base        = $unit . q{: };
 
-#~ diag(q{&### This test normally generates much console output. ###&});
+diag(q{&### This test normally generates warnings. ###&});
 
 #----------------------------------------------------------------------------#
 # CONSTANTS
 
 #----------------------------------------------------------------------------#
 # GLOBALS
-
 
 #----------------------------------------------------------------------------#
 # CASES
@@ -42,8 +41,6 @@ my @td  = (
                     }
     },
     
-    { -done => 1 }, # # # # # # # # # # # # DONE # # # # # # # # # # # # # # #
-    
     {
         -case       => 'setup',
         -code       => q{
@@ -59,7 +56,12 @@ my @td  = (
         -args       => [
                         'status',
                     ],
-        -need       => 0,               # shell exit
+        -punt       => {
+                        exit    => 0,               # shell exit
+                        stdout  => words(qw|
+                            branch master
+                        |),
+                    }
     },
     
     {
@@ -67,8 +69,15 @@ my @td  = (
         -args       => [
                         '--version',
                     ],
-        -need       => 0,               # shell exit
+        -punt       => {
+                        exit    => 0,               # shell exit
+                        stdout  => words(qw|
+                            git version
+                        |),
+                    }
     },
+    
+    { -done => 1 }, # # # # # # # # # # # # DONE # # # # # # # # # # # # # # #
     
     
 );
