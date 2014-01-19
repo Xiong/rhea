@@ -1,0 +1,46 @@
+Rhea                    version 0.0.0
+
+When ye least expect it, there Rhea will be,
+and your screams will break your throats.
+    -- Stephen King
+
+Configuration management for Minetest using git version control in Perl.
+
+Rhea is a script (and supporting library) written in Perl that wraps calls 
+to the git version control system to help manage Minetest server 
+configurations, especially one's collection of 'mods' (plugins, addons). 
+Integrity of each individual mod is maintained with git submodules; Rhea 
+takes care of the "hair" associated with this feature. Server operators 
+can experiment with mod combinations, edit individual mods, and push the 
+entire set or an individual to GitHub for others to try. 
+
+Rhea also manages multiple minetest.conf files, merging them into 
+a single file for play. 
+
+INSTALLATION
+
+Recommended to use the 'cpan' tool included with most Perl distributions 
+to install all dependencies and then Rhea with: 
+
+    $ cpan
+    cpan> install App-Rhea
+
+To install this module with Module::Build, run the following commands:
+
+    perl Build.PL
+    Build
+    Build test
+    Build install
+
+DEPENDENCIES
+
+perl 5.14.2 or better. 
+For Perl module dependencies, please see Build.PL.
+
+LICENSE
+
+Copyright (C) 2014 Xiong Changnian <xiong@cpan.org>
+
+This application is released under Artistic License 2.0:
+
+(http://www.opensource.org/licenses/artistic-license-2.0.php)

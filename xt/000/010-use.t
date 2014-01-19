@@ -9,10 +9,20 @@ BEGIN {
 }   
 
 BEGIN {
+    # Project module
 use App::Rhea;          # Set up a Minetest server using git
+
+    # Core modules
 use Cwd;                # Get current working directory = cwd();
 use File::Spec;         # Portable OO methods on filenames
 use File::Path;         # Create or remove directory trees
+
+    # CPAN modules
+use Error::Base;
+use Perl6::Form;
+use Test::Trap;
+use Devel::Comments '###';
+
 }
 
 pass( 'Use modules.' );
