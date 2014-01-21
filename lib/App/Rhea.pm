@@ -15,6 +15,9 @@ use version; our $VERSION = qv('v0.0.0');
 #============================================================================#
 # GLOBALS
 
+# Constants
+my $rhea_token      = q{%# };
+
 # Compiled regexes
 our $QRFALSE        = qr/\A0?\z/            ;
 our $QRTRUE         = qr/\A(?!$QRFALSE)/    ;
