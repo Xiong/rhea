@@ -10,7 +10,7 @@ use Cwd;                # Get current working directory = cwd();
 # CPAN modules
 
 # Alternate uses
-use Devel::Comments '###', ({ -file => 'debug.log' });                   #~
+#~ use Devel::Comments '###', ({ -file => 'debug.log' });                   #~
 
 ## use
 #============================================================================#

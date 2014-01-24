@@ -30,9 +30,10 @@ my $fixed_test_dir      = 'rheatmp';
 
 my @td  = (
     
+    # Fixed cases leave a mess; so disable in production.
     {
         -case       => 'fixed',
-#~         -skip       => 1,
+        -skip       => 1,
         -code       => qq{
                         `rm -rf '$fixed_test_dir' 2>&1` ;   # backticks
                         $unit('$fixed_test_dir')        ;
@@ -42,7 +43,7 @@ my @td  = (
     
     {
         -case       => 'fixed-init',
-#~         -skip       => 1,
+        -skip       => 1,
         -code       => qq{
                         `rm -rf '$fixed_test_dir' 2>&1` ;   # backticks
                         $unit('$fixed_test_dir')        ;
@@ -57,6 +58,38 @@ my @td  = (
                             nothing to commit
                         |),
                     }
+    },
+    
+    {
+        -case       => 'fixed-nested',
+        -skip       => 1,
+        -code       => qq{
+                        `rm -rf '$fixed_test_dir' 2>&1` ;   # backticks
+                        $unit('$fixed_test_dir')        ;
+                        chdir "$fixed_test_dir"         ;
+                        `touch dummy 2>&1`              ;   # dirty root
+                        $unit('$fixed_test_dir' x 2)    ;
+                        chdir "$fixed_test_dir" x 2     ;
+                        App::Rhea::_git( 'status' )     ;   # clean sub?
+                    },
+        -punt       => {
+                        exit    => 0,               # shell exit
+                        output  => words(qw|
+                            branch master 
+                            Initial commit
+                            nothing to commit
+                        |),
+                    }
+    },
+    
+    # Temp cases clean up after themselves automatically.
+    {
+        -case       => 'temp',
+#~         -skip       => 1,
+        -code       => qq{
+                        $unit()        ;
+                    },
+        -like       => $QRTRUE,                     # perl okay
     },
     
     
