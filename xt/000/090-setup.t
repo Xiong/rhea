@@ -3,6 +3,7 @@ use warnings;
 #~ use diagnostics;
 
 use Test::More;
+use Cwd;                # Get current working directory = cwd();
 
 use App::Rhea;
 my $QRTRUE       = $App::Rhea::QRTRUE    ;
@@ -21,6 +22,7 @@ my $base        = $unit . q{: };
 #----------------------------------------------------------------------------#
 # CONSTANTS
 my $fixed_test_dir      = 'rheatmp';
+my $working_dir         = cwd();
 
 #----------------------------------------------------------------------------#
 # GLOBALS
@@ -90,6 +92,35 @@ my @td  = (
                         $unit()        ;
                     },
         -like       => $QRTRUE,                     # perl okay
+    },
+    
+    {
+        -case       => 'temp-hoge-piyo',
+#~         -skip       => 1,
+        -code       => q|
+            my $test_dir    = App::Rhea::_setup();
+            my @rv          ;
+            my $href        ;
+            chdir "$test_dir";
+            `touch dummy 2>&1`;                     # dirty root
+            App::Rhea::_setup('hoge');
+            $href   = App::Rhea::_git( 'status' );  # clean sub?
+            push @rv, $href->{output};
+            chdir "$test_dir";
+            App::Rhea::_setup('piyo');
+            $href   = App::Rhea::_git( 'status' );  # clean sub?
+            push @rv, $href->{output};
+            chdir "$working_dir";
+            return @rv;
+        |,
+        -like       => words(qw|
+                            branch master 
+                            Initial commit
+                            nothing to commit
+                            branch master 
+                            Initial commit
+                            nothing to commit
+                        |),
     },
     
     
