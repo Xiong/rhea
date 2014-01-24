@@ -5,11 +5,12 @@ use warnings;
 use version; our $VERSION = qv('v0.0.0');
 
 # Core modules
+use Cwd;                # Get current working directory = cwd();
 
 # CPAN modules
 
 # Alternate uses
-#~ use Devel::Comments '###', ({ -file => 'debug.log' });                   #~
+use Devel::Comments '###', ({ -file => 'debug.log' });                   #~
 
 ## use
 #============================================================================#
@@ -26,6 +27,10 @@ our $QRTRUE         = qr/\A(?!$QRFALSE)/    ;
 
 # git-specific
 my $git_name        = q{git};
+
+# Scratch
+my $CWD             ;
+$CWD                = cwd();
 
 #----------------------------------------------------------------------------#
 
@@ -102,6 +107,9 @@ sub _setup {
     my $test_dir    = shift;
     my $cleanup     ;
     my $template    = 'rheatmpXXXX';
+    my $cmd         ;
+    my $rv          ;
+    my $parent      = cwd();
     
     # Make the test dir.
     if (not $test_dir) {                # then gotta make one up
@@ -115,7 +123,10 @@ sub _setup {
     };
     
     # Initialize a git repo here.
-    
+    chdir $test_dir
+        or die "Failed to chdir $test_dir";
+    $rv = _git('init');
+    chdir $parent;
     
     return $test_dir;
 }; ## _setup

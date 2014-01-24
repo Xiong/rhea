@@ -32,6 +32,7 @@ my @td  = (
     
     {
         -case       => 'fixed',
+#~         -skip       => 1,
         -code       => qq{
                         `rm -rf '$fixed_test_dir' 2>&1` ;   # backticks
                         $unit('$fixed_test_dir')        ;
@@ -41,15 +42,19 @@ my @td  = (
     
     {
         -case       => 'fixed-init',
+#~         -skip       => 1,
         -code       => qq{
                         `rm -rf '$fixed_test_dir' 2>&1` ;   # backticks
                         $unit('$fixed_test_dir')        ;
+                        chdir "$fixed_test_dir"         ;
                         App::Rhea::_git( 'status' )     ;
                     },
         -punt       => {
                         exit    => 0,               # shell exit
                         output  => words(qw|
-                            usage git
+                            branch master 
+                            Initial commit
+                            nothing to commit
                         |),
                     }
     },
