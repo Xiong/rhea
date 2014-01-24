@@ -3,23 +3,26 @@ use warnings;
 #~ use diagnostics;
 
 use Test::More;
+use Cwd;                # Get current working directory = cwd();
 
 use App::Rhea;
 my $QRTRUE       = $App::Rhea::QRTRUE    ;
 my $QRFALSE      = $App::Rhea::QRFALSE   ;
 
 #----------------------------------------------------------------------------#
-# git-qx.t
+# setup.t
 #
 # Execution of arbitrary git command, capturing STDOUT, STDERR.
 #
-my $unit        = q{App::Rhea::_git_qx};
+my $unit        = q{App::Rhea::_setup};
 my $base        = $unit . q{: };
 
-diag(q{&### This test normally generates warnings. ###&});
+#~ diag(q{&### This test normally generates warnings. ###&});
 
 #----------------------------------------------------------------------------#
 # CONSTANTS
+my $fixed_test_dir      = 'rheatmp';
+my $working_dir         = cwd();
 
 #----------------------------------------------------------------------------#
 # GLOBALS
@@ -29,53 +32,97 @@ diag(q{&### This test normally generates warnings. ###&});
 
 my @td  = (
     
+    # Fixed cases leave a mess; so disable in production.
     {
-        -case       => 'no args',       # emits usage; considered an error
-        -args       => [
-                    ],
-        -punt       => {
-                        exit    => 1,               # shell exit
-                        stdout  => words(qw|
-                            usage git
-                        |),
-                    }
-    },
-    
-    {
-        -case       => 'setup',
-        -code       => q{
-                        system(qw| mkdir rheatmp    |);
-                        chdir 'rheatmp'               ;
-                        system(qw| git init         |);
+        -case       => 'fixed',
+        -skip       => 1,
+        -code       => qq{
+                        `rm -rf '$fixed_test_dir' 2>&1` ;   # backticks
+                        $unit('$fixed_test_dir')        ;
                     },
-        -need       => 0,               # shell exit
+        -need       => $fixed_test_dir,       # perl okay
     },
     
     {
-        -case       => 'status',
-        -args       => [
-                        'status',
-                    ],
+        -case       => 'fixed-init',
+        -skip       => 1,
+        -code       => qq{
+                        `rm -rf '$fixed_test_dir' 2>&1` ;   # backticks
+                        $unit('$fixed_test_dir')        ;
+                        chdir "$fixed_test_dir"         ;
+                        App::Rhea::_git( 'status' )     ;
+                    },
         -punt       => {
                         exit    => 0,               # shell exit
-                        stdout  => words(qw|
-                            branch master
+                        output  => words(qw|
+                            branch master 
+                            Initial commit
+                            nothing to commit
                         |),
                     }
     },
     
     {
-        -case       => 'version',
-        -args       => [
-                        '--version',
-                    ],
+        -case       => 'fixed-nested',
+        -skip       => 1,
+        -code       => qq{
+                        `rm -rf '$fixed_test_dir' 2>&1` ;   # backticks
+                        $unit('$fixed_test_dir')        ;
+                        chdir "$fixed_test_dir"         ;
+                        `touch dummy 2>&1`              ;   # dirty root
+                        $unit('$fixed_test_dir' x 2)    ;
+                        chdir "$fixed_test_dir" x 2     ;
+                        App::Rhea::_git( 'status' )     ;   # clean sub?
+                    },
         -punt       => {
                         exit    => 0,               # shell exit
-                        stdout  => words(qw|
-                            git version
+                        output  => words(qw|
+                            branch master 
+                            Initial commit
+                            nothing to commit
                         |),
                     }
     },
+    
+    # Temp cases clean up after themselves automatically.
+    {
+        -case       => 'temp',
+#~         -skip       => 1,
+        -code       => qq{
+                        $unit()        ;
+                    },
+        -like       => $QRTRUE,                     # perl okay
+    },
+    
+    {
+        -case       => 'temp-hoge-piyo',
+#~         -skip       => 1,
+        -code       => q|
+            my $test_dir    = App::Rhea::_setup();
+            my @rv          ;
+            my $href        ;
+            chdir "$test_dir";
+            `touch dummy 2>&1`;                     # dirty root
+            App::Rhea::_setup('hoge');
+            $href   = App::Rhea::_git( 'status' );  # clean sub?
+            push @rv, $href->{output};
+            chdir "$test_dir";
+            App::Rhea::_setup('piyo');
+            $href   = App::Rhea::_git( 'status' );  # clean sub?
+            push @rv, $href->{output};
+            chdir "$working_dir";
+            return @rv;
+        |,
+        -like       => words(qw|
+                            branch master 
+                            Initial commit
+                            nothing to commit
+                            branch master 
+                            Initial commit
+                            nothing to commit
+                        |),
+    },
+    
     
     { -done => 1 }, # # # # # # # # # # # # DONE # # # # # # # # # # # # # # #
     
@@ -190,9 +237,9 @@ for (@td) {
         
         # Application-specific!
         if ( defined $punt ) {
-            $diag           = 'punt-stdout';
-            $got            = $rv[0]->{stdout};
-            $want           = $punt->{stdout};
+            $diag           = 'punt-output';
+            $got            = $rv[0]->{output};
+            $want           = $punt->{output};
             like( $got, $want, $diag );
             $diag           = 'punt-exit';
             $got            = $rv[0]->{exit};
