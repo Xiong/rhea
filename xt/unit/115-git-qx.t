@@ -9,7 +9,7 @@ my $QRTRUE       = $App::Rhea::QRTRUE    ;
 my $QRFALSE      = $App::Rhea::QRFALSE   ;
 
 #----------------------------------------------------------------------------#
-# git.t
+# git-qx.t
 #
 # Execution of arbitrary git command, capturing STDOUT, STDERR.
 #
