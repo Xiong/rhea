@@ -6,6 +6,8 @@ use version; our $VERSION = qv('v0.0.0');
 
 # Core modules
 use Cwd;                # Get current working directory = cwd();
+use File::Temp          # return name and handle of a temporary file safely
+    qw| tempdir |;
 
 # CPAN modules
 
@@ -114,7 +116,11 @@ sub _setup {
     # Make the test dir.
     if (not $test_dir) {                # then gotta make one up
         $cleanup        = 1;
-        
+        $test_dir       = tempdir(
+                            $template,
+                            DIR         => $parent,
+                            CLEANUP     => $cleanup,
+                        );
     }
     else {
         $cleanup        = 0;
