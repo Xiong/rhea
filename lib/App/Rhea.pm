@@ -17,19 +17,21 @@ use version; our $VERSION = qv('v0.0.0');
 
 # Constants
 my $rhea_token      = q{%# };
+my $fixed_test_dir  = q{rheatmp};
+my $shrd            = q{ 2>&1};         # bash shell redirect
 
 # Compiled regexes
 our $QRFALSE        = qr/\A0?\z/            ;
 our $QRTRUE         = qr/\A(?!$QRFALSE)/    ;
 
 # git-specific
-my $git_name        = 'git';
+my $git_name        = q{git};
 
 #----------------------------------------------------------------------------#
 
 #=========# INTERNAL ROUTINE
 #
-#~     _git( @args );
+#~     _git_system( @args );
 #       
 # Parms     : array of strings
 # Returns   : shell exit code
@@ -38,8 +40,9 @@ my $git_name        = 'git';
 # Pass-through execution of arbitrary git command...
 #   ... not otherwise managed.
 #   This is the mode suitable for interactive commands.
+# We do not get any output from the command; the user sees it directly. 
 # 
-sub _git {
+sub _git_system {
     my @args    = @_ or ();
 #~     my $cmd     = join q{ }, @args;
     
@@ -48,32 +51,74 @@ sub _git {
     my $status  = ($? >> 8);
     
     return $status;
-}; ## _git
+}; ## _git_system
 
 #=========# INTERNAL ROUTINE
 #
-#~     _git_qx( @args );
+#~     _git( @args );
 #       
 # Parms     : array of strings
 # Returns   : 
-# Output    : ---
+# Output    : STDOUT, STDERR silenced
 # 
 # Execution of arbitrary git command...
 #   ... with STDOUT, STDERR captured.
 # 
-sub _git_qx {
+sub _git {
     my @args    = @_ or ();
-    my $cmd     = join q{ }, $git_name, @args;
+    my $cmd     = join q{ }, $git_name, @args, $shrd;
     
-    my $stdout  = `$cmd`;
-    
+    my $output  = `$cmd`;
     my $status  = ($? >> 8);
     
     return {
-        stdout  => $stdout,
-        exit    => $status,
+        output  => $output,     # STDOUT . STDERR
+        exit    => $status,     # shell exit
     };
-}; ## _git_qx
+}; ## _git
+
+#=========# TEST ROUTINE
+#
+#~     _setup($test_dir);      # set up a test repo and some subs
+#       
+# Rhea operates on nested git repositories.
+# These are too much to set up in each test script.
+# 
+# If $test_dir is passed in then that will be the exact name of the dir
+#   and it will be created in the current working dir
+#   and it WILL NOT be cleaned up on exit!
+# This should not be done in production for the superproject 
+#   but may be done for its subs since File::Temp will force rm the super.
+# 
+# If called with no args then a dir will be created using File::Temp
+#   ... somewhere... with some name...
+#   and it WILL be cleaned up on exit. 
+# 
+# Either way, a 'git init' will be executed in the new dir.
+# 
+# Returns   : Name of test dir actually created
+# 
+sub _setup {
+    my $test_dir    = shift;
+    my $cleanup     ;
+    my $template    = 'rheatmpXXXX';
+    
+    # Make the test dir.
+    if (not $test_dir) {                # then gotta make one up
+        $cleanup        = 1;
+        
+    }
+    else {
+        $cleanup        = 0;
+        `mkdir $test_dir $shrd`;        # silence and discard output
+        if ($?) { die "Failed to mkdir $test_dir \n$?" };
+    };
+    
+    # Initialize a git repo here.
+    
+    
+    return $test_dir;
+}; ## _setup
 
 #=========# INTERNAL ROUTINE
 #

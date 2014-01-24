@@ -36,7 +36,22 @@ my @td  = (
                         `rm -rf '$fixed_test_dir' 2>&1` ;   # backticks
                         $unit('$fixed_test_dir')        ;
                     },
-        -need       => 1,               # perl okay
+        -need       => $fixed_test_dir,       # perl okay
+    },
+    
+    {
+        -case       => 'fixed-init',
+        -code       => qq{
+                        `rm -rf '$fixed_test_dir' 2>&1` ;   # backticks
+                        $unit('$fixed_test_dir')        ;
+                        App::Rhea::_git( 'status' )     ;
+                    },
+        -punt       => {
+                        exit    => 0,               # shell exit
+                        output  => words(qw|
+                            usage git
+                        |),
+                    }
     },
     
     
@@ -153,9 +168,9 @@ for (@td) {
         
         # Application-specific!
         if ( defined $punt ) {
-            $diag           = 'punt-stdout';
-            $got            = $rv[0]->{stdout};
-            $want           = $punt->{stdout};
+            $diag           = 'punt-output';
+            $got            = $rv[0]->{output};
+            $want           = $punt->{output};
             like( $got, $want, $diag );
             $diag           = 'punt-exit';
             $got            = $rv[0]->{exit};
