@@ -16,6 +16,7 @@ use App::Rhea;          # Set up a Minetest server using git
 use Cwd;                # Get current working directory = cwd();
 use File::Spec;         # Portable OO methods on filenames
 use File::Path;         # Create or remove directory trees
+use File::Temp;         # return name and handle of a temporary file safely
 
     # CPAN modules
 use Error::Base;
