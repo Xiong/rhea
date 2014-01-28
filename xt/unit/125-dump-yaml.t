@@ -4,6 +4,7 @@ use warnings;
 
 use Test::More;
 use Cwd;                # Get current working directory = cwd();
+use File::Spec;         # Portable OO methods on filenames
 
 use App::Rhea;
 my $QRTRUE       = $App::Rhea::QRTRUE    ;
@@ -23,6 +24,20 @@ my $base        = $unit . q{: };
 # CONSTANTS
 my $fixed_test_dir      = 'rheatmp';
 my $working_dir         = cwd();
+my $rhea_dir            = '.rhea';
+my $yaml_fn             = 'test.yaml';
+my $href                = {
+    hoge    => 42,
+    piyo    => 'foo',
+    aref    => [ 'bar', 17 ],
+};
+my $serialized          = << 'HERE';
+hoge: 42
+piyo: foo
+aref: 
+    - bar
+    - 17
+HERE
 
 #----------------------------------------------------------------------------#
 # GLOBALS
@@ -32,37 +47,37 @@ my $working_dir         = cwd();
 
 my @td  = (
     
-    { -done => 1 }, # # # # # # # # # # # # DONE # # # # # # # # # # # # # # #
-    
     # Fixed cases leave a mess; so disable in production.
     {
-        -case       => 'fixed',
-        -skip       => 1,
+        -case       => 'fixed-setup',
+#~         -skip       => 1,
         -code       => qq{
-                        `rm -rf '$fixed_test_dir' 2>&1` ;   # backticks
-                        $unit('$fixed_test_dir')        ;
+            `rm -rf '$fixed_test_dir' 2>&1`;            # backticks
+            App::Rhea::_setup('$fixed_test_dir');
+            chdir "$fixed_test_dir";
                     },
-        -need       => $fixed_test_dir,       # perl okay
+        -need       => 1,       # perl okay
     },
     
     {
-        -case       => 'fixed-init',
-        -skip       => 1,
-        -code       => qq{
-                        `rm -rf '$fixed_test_dir' 2>&1` ;   # backticks
-                        $unit('$fixed_test_dir')        ;
-                        chdir "$fixed_test_dir"         ;
-                        App::Rhea::_git( 'status' )     ;
-                    },
-        -punt       => {
-                        exit    => 0,               # shell exit
-                        output  => words(qw|
-                            branch master 
-                            Initial commit
-                            nothing to commit
-                        |),
-                    }
+        -case       => 'fixed-dump-href',
+#~         -skip       => 1,
+        -code       => q|
+            my $filename    = File::Spec::catfile( $rhea_dir, $yaml_fn );
+            App::Rhea::_dump_yaml(
+                filename    => $filename,
+                ref         => $href,
+            );
+            open my $fh, '<', $filename or die "Failed open $filename";
+            local $/        = undef;            # slurp
+            my $data        = <$fh>;
+            close $fh or die "Failed close $filename";
+            return $data;
+        |,
+        -need       => $serialized,
     },
+    
+    { -done => 1 }, # # # # # # # # # # # # DONE # # # # # # # # # # # # # # #
     
     {
         -case       => 'fixed-nested',
