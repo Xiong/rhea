@@ -91,7 +91,7 @@ sub _parse {
         
     # Parse options out of passed-in copy of @ARGV.
     GetOptionsFromArray( \@args, $opt, @opt_setup )
-        or return { branch => usage };
+        or return { branch => 'usage' };
     
     # General action tree.
     if ( exists $opt->{debug} ){
