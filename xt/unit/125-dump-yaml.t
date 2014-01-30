@@ -44,6 +44,10 @@ HERE
 # GLOBALS
 
 #----------------------------------------------------------------------------#
+# SETUP
+my $prove_dir       = cwd();    # save CWD to restore on teardown
+
+#----------------------------------------------------------------------------#
 # CASES
 
 my @td  = (
@@ -51,7 +55,7 @@ my @td  = (
     # Fixed cases leave a mess; so disable in production.
     {
         -case       => 'fixed-setup',
-#~         -skip       => 1,
+        -skip       => 1,
         -code       => qq{
             `rm -rf '$fixed_test_dir' 2>&1`;            # backticks
             App::Rhea::_setup('$fixed_test_dir');
@@ -59,9 +63,39 @@ my @td  = (
                     },
         -need       => 1,       # perl okay
     },
-    
     {
         -case       => 'fixed-dump-href',
+        -skip       => 1,
+        -code       => q|
+            App::Rhea::init();
+            my $filename    = File::Spec->catfile( $rhea_dir, $yaml_fn );
+            App::Rhea::_dump_yaml({
+                filename    => $filename,
+                data        => $href,
+            });
+            -f $filename or die "Did not write $filename";
+            open my $fh, '<', $filename or die "Failed open $filename";
+            local $/        = undef;            # slurp
+            my $data        = <$fh>;
+            close $fh or die "Failed close $filename";
+            my $restored    = YAML::XS::Load($data);
+            return $restored;
+        |,
+        -deep       => $href,
+    },
+    
+    # Temp cases clean up after themselves automatically.
+    {
+        -case       => 'temp-setup',
+#~         -skip       => 1,
+        -code       => q|
+            my $dir = App::Rhea::_setup();
+            chdir "$dir";
+        |,
+        -need       => 1,       # perl okay
+    },
+    {
+        -case       => 'temp-dump-href',
 #~         -skip       => 1,
         -code       => q|
             App::Rhea::init();
@@ -82,45 +116,6 @@ my @td  = (
     },
     
     { -done => 1 }, # # # # # # # # # # # # DONE # # # # # # # # # # # # # # #
-    
-    # Temp cases clean up after themselves automatically.
-    {
-        -case       => 'temp',
-#~         -skip       => 1,
-        -code       => qq{
-                        $unit()        ;
-                    },
-        -like       => $QRTRUE,                     # perl okay
-    },
-    
-    {
-        -case       => 'temp-hoge-piyo',
-#~         -skip       => 1,
-        -code       => q|
-            my $test_dir    = App::Rhea::_setup();
-            my @rv          ;
-            my $href        ;
-            chdir "$test_dir";
-            `touch dummy 2>&1`;                     # dirty root
-            App::Rhea::_setup('hoge');
-            $href   = App::Rhea::_git( 'status' );  # clean sub?
-            push @rv, $href->{output};
-            chdir "$test_dir";
-            App::Rhea::_setup('piyo');
-            $href   = App::Rhea::_git( 'status' );  # clean sub?
-            push @rv, $href->{output};
-            chdir "$working_dir";
-            return @rv;
-        |,
-        -like       => words(qw|
-                            branch master 
-                            Initial commit
-                            nothing to commit
-                            branch master 
-                            Initial commit
-                            nothing to commit
-                        |),
-    },
     
     
     
@@ -257,6 +252,7 @@ for (@td) {
 #----------------------------------------------------------------------------#
 # TEARDOWN
 
+chdir $prove_dir;       # restore CWD so temp dir can clean itself up
 done_testing($tc);
 exit 0;
 
