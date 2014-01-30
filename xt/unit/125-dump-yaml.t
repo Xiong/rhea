@@ -63,11 +63,13 @@ my @td  = (
         -case       => 'fixed-dump-href',
 #~         -skip       => 1,
         -code       => q|
+            App::Rhea::init();
             my $filename    = File::Spec->catfile( $rhea_dir, $yaml_fn );
             App::Rhea::_dump_yaml({
                 filename    => $filename,
                 data        => $href,
             });
+            -f $filename or die "Did not write $filename";
             open my $fh, '<', $filename or die "Failed open $filename";
             local $/        = undef;            # slurp
             my $data        = <$fh>;
@@ -78,28 +80,6 @@ my @td  = (
     },
     
     { -done => 1 }, # # # # # # # # # # # # DONE # # # # # # # # # # # # # # #
-    
-    {
-        -case       => 'fixed-nested',
-        -skip       => 1,
-        -code       => qq{
-                        `rm -rf '$fixed_test_dir' 2>&1` ;   # backticks
-                        $unit('$fixed_test_dir')        ;
-                        chdir "$fixed_test_dir"         ;
-                        `touch dummy 2>&1`              ;   # dirty root
-                        $unit('$fixed_test_dir' x 2)    ;
-                        chdir "$fixed_test_dir" x 2     ;
-                        App::Rhea::_git( 'status' )     ;   # clean sub?
-                    },
-        -punt       => {
-                        exit    => 0,               # shell exit
-                        output  => words(qw|
-                            branch master 
-                            Initial commit
-                            nothing to commit
-                        |),
-                    }
-    },
     
     # Temp cases clean up after themselves automatically.
     {
