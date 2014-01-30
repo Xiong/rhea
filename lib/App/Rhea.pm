@@ -167,8 +167,10 @@ sub _setup {
 # Parms     : 
 #       filename    : string    : name of file, relative or absolute
 #       data        : hashref   : structure to write out
-# Reads     : rhea.yaml, etc.
+# Writes    : rhea.yaml, etc.
 # Returns   : 1
+# See also  : _load_yaml()
+# TODO: Add checks to both routines to ban aryrefs.
 # 
 sub _dump_yaml {
     my $args        = shift;
@@ -196,6 +198,39 @@ sub _dump_yaml {
     
     return 1;
 }; ## _dump_yaml
+
+#=========# INTERNAL ROUTINE
+#
+#~     $data    = _load_yaml($filename);
+#       
+# Reads arbitrarily complex data structure from disk file. 
+# 
+# Parms     : 
+#       filename    : string    : name of file, relative or absolute
+# Reads     : rhea.yaml, etc.
+# Returns   : reference : data deserialized from file
+# See also  : _dump_yaml()
+# 
+# NOTE that although our _dump_yaml() specifies dumping a hashref, 
+#   YAML will happily encode an array. 
+#   This will dereference badly as a hashref!
+# TODO: Add checks to both routines to ban aryrefs.
+# 
+sub _load_yaml {
+    my $filename        = shift
+        or File::Spec->catfile( $rhea_dir, $yaml_fn );
+    my $data            ;
+    
+    -f $filename or die "Not an existing file: $filename";
+    
+    open my $fh, '<', $filename or die "Failed open $filename";
+    local $/        = undef;            # slurp
+    my $yaml        = <$fh>;
+    close $fh or die "Failed close $filename";
+    $data           = YAML::XS::Load($yaml);
+    
+    return $data;
+}; ## _load_yaml
 
 #=========# INTERNAL ROUTINE
 #
