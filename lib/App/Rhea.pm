@@ -10,6 +10,12 @@ use File::Spec;         # Portable OO methods on filenames
 use File::Temp          # return name and handle of a temporary file safely
     qw| tempdir |;
 use YAML::XS;           # Perl YAML Serialization using XS and libyaml
+use Getopt::Long                            # Parses command-line options
+    qw( GetOptionsFromArray ),          # not directly from @ARGV
+    qw( :config bundling ),             # enable, for instance, -xyz
+    qw( require_order pass_through);    # terminate processing on non-options
+use Pod::Usage;                             # Build help text from POD
+use Pod::Find qw{pod_where};                # POD is in ...
 
 # CPAN modules
 
@@ -20,12 +26,23 @@ use YAML::XS;           # Perl YAML Serialization using XS and libyaml
 #============================================================================#
 # GLOBALS
 
+our $Debug          = 0;
+
 # Constants
 my $rhea_token      = q{%# };
 my $fixed_test_dir  = q{rheatmp};
 my $shrd            = q{ 2>&1};         # bash shell redirect
 my $rhea_dir            = '.rhea';
 my $yaml_fn             = 'config.yaml';
+
+# Command line interface
+#   See: run()
+my $cli       = {
+    'help|h+'       => q{Try -h, -hh, -hhh for more help.},
+    'version|v'     => q{Print rhea version and exit.},
+    'debug|d+'      => q{Print verbose debugging info.},
+    'recurse|r'     => q{Do subcommand recursively over all submods.},
+};
 
 # Compiled regexes
 our $QRFALSE        = qr/\A0?\z/            ;
@@ -53,6 +70,64 @@ sub init {
     
     
 }; ## init
+
+#=========# INTERNAL ROUTINE
+#
+#~     $rh     = _parse(@args);
+#       
+# Parse a list of (command line) args and decide (generally) what to do. 
+# 
+# Parms     : @args     : array of whatnot      # command line split by shell
+# Returns   : $rh       : hashref
+#               {branch}    : string            # what to do; subcommand
+#               {options}   : hashref           # what G::L got (--all, etc.)
+#               {args}      : aref of whatnot   # remaining arguments
+# 
+# Use Getopt::Long to extract options meant for rhea itself. 
+# Pass everything else to git... if that is our fate. 
+# 
+sub _parse {
+    my @args            = @_    or return { branch => 'usage' };
+    my @opt_setup       = keys %$cli;
+    my $opt             = {};   # option keys and maybe config
+        
+    # Parse options out of passed-in copy of @ARGV.
+    GetOptionsFromArray( \@args, $opt, @opt_setup )
+        or return { branch => 'usage' };
+    
+    # General action tree.
+    if ( exists $opt->{debug} ){
+        $Debug          = $opt->{debug};
+    };
+    if ( exists $opt->{help} ){
+        return {
+            branch      => 'help',      # enter the help system
+            options     => $opt,        # level of help is {help}
+            args        => \@args,      # [] or help topic requested
+        };
+    }; 
+    if ( exists $opt->{version} ){
+        return {
+            branch      => 'version',
+        };
+    }; 
+    
+    
+    if ( keys %$opt ){                  # got options but no rhea subcommand
+        return {
+            branch      => 'git_system',
+            options     => $opt,
+            args        => \@args,
+        };
+    }; 
+    
+    # Default, fall-through.
+        return {
+            branch      => 'git_system',
+        #   options     => $opt,        # don't exist key to undef value
+            args        => \@args,
+        };
+}; ## _parse
 
 #=========# INTERNAL ROUTINE
 #
