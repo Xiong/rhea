@@ -54,8 +54,69 @@ my @td  = (
     
     {
         -case       => 'null',
-#~         -skip       => 1,
+#~         -work       => 1,
         -like       => $QRTRUE,
+    },
+    
+    {
+        -case       => 'null-usage',
+        -work       => 1,
+        -deep       => {
+            branch      => 'usage',
+        },
+    },
+    
+    {
+        -case       => 'help',
+        -work       => 1,
+        -args       => [ '--help' ],
+        -deep       => {
+            branch      => 'help',
+            options     => { help => 1 },
+            args        => [],
+        },
+    },
+    
+    {
+        -case       => 'h',
+        -work       => 1,
+        -args       => [ '-h' ],
+        -deep       => {
+            branch      => 'help',
+            options     => { help => 1 },
+            args        => [],
+        },
+    },
+    
+    {
+        -case       => 'hh',
+        -work       => 1,
+        -args       => [ '-hh' ],
+        -deep       => {
+            branch      => 'help',
+            options     => { help => 2 },
+            args        => [],
+        },
+    },
+    
+    {
+        -case       => 'hhh',
+        -work       => 1,
+        -args       => [ '-hhh' ],
+        -deep       => {
+            branch      => 'help',
+            options     => { help => 3 },
+            args        => [],
+        },
+    },
+    
+    {
+        -case       => 'version',
+        -work       => 1,
+        -args       => [ '--version' ],
+        -deep       => {
+            branch      => 'version',
+        },
     },
     
     
@@ -91,8 +152,8 @@ my $Verbose     = 0;
 #~    $Verbose++;
 
 for (@td) {
-    next if $_->{-skip};          # skip the entire case
-    last if $_->{-done};          # done with all cases
+    next if not $_->{-work};            # skip the whole case
+    last if $_->{-done};                # done with all cases
     $tc++;
     my %t           = %{ $_ };
     my $case        = $base . $t{-case};

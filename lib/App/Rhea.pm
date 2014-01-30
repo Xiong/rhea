@@ -79,7 +79,7 @@ sub init {
 # Returns   : $rh       : hashref
 #               {branch}    : string            # what to do; subcommand
 #               {options}   : hashref           # what G::L got (--all, etc.)
-#               {args}      : array of whatnot  # remaining arguments
+#               {args}      : aref of whatnot   # remaining arguments
 # 
 # Use Getopt::Long to extract options meant for rhea itself. 
 # Pass everything else to git... if that is our fate. 
@@ -99,9 +99,9 @@ sub _parse {
     };
     if ( exists $opt->{help} ){
         return {
-            branch      => 'help',
-            options     => $opt,
-            args        => \@args,
+            branch      => 'help',      # enter the help system
+            options     => $opt,        # level of help is {help}
+            args        => \@args,      # [] or help topic requested
         };
     }; 
     if ( exists $opt->{version} ){
