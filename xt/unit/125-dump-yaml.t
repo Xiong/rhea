@@ -63,11 +63,11 @@ my @td  = (
         -case       => 'fixed-dump-href',
 #~         -skip       => 1,
         -code       => q|
-            my $filename    = File::Spec::catfile( $rhea_dir, $yaml_fn );
-            App::Rhea::_dump_yaml(
+            my $filename    = File::Spec->catfile( $rhea_dir, $yaml_fn );
+            App::Rhea::_dump_yaml({
                 filename    => $filename,
-                ref         => $href,
-            );
+                data        => $href,
+            });
             open my $fh, '<', $filename or die "Failed open $filename";
             local $/        = undef;            # slurp
             my $data        = <$fh>;

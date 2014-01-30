@@ -6,6 +6,7 @@ use version; our $VERSION = qv('v0.0.0');
 
 # Core modules
 use Cwd;                # Get current working directory = cwd();
+use File::Spec;         # Portable OO methods on filenames
 use File::Temp          # return name and handle of a temporary file safely
     qw| tempdir |;
 
@@ -136,6 +137,31 @@ sub _setup {
     
     return $test_dir;
 }; ## _setup
+
+#=========# INTERNAL ROUTINE
+#
+#~     _dump_yaml({
+#~         filename    => $filename,
+#~         data        => $data,
+#~     });
+#       
+# Writes arbitrarily complex data structure to disk file. 
+# 
+# Parms     : 
+#       filename    : string    : name of file, relative or absolute
+#       data        : hashref   : structure to write out
+# Reads     : rhea.yaml, etc.
+# Returns   : 1
+# 
+sub _dump_yaml {
+    my $args        = shift;
+    my $filename    = $args->{filename} or '.rhea/rhea.yaml';
+    my $data        = $args->{data}     or die 'Data required to dump yaml';
+    
+    
+    
+    return 1;
+}; ## _dump_yaml
 
 #=========# INTERNAL ROUTINE
 #
