@@ -64,6 +64,8 @@ my @td  = (
         -deep       => {
             branch      => 'usage',
         },
+        -outlike    => $QRFALSE,
+        -errlike    => $QRFALSE,
     },
     
     {
@@ -75,6 +77,8 @@ my @td  = (
             options     => { help => 1 },
             args        => [],
         },
+        -outlike    => $QRFALSE,
+        -errlike    => $QRFALSE,
     },
     
     {
@@ -86,6 +90,8 @@ my @td  = (
             options     => { help => 1 },
             args        => [],
         },
+        -outlike    => $QRFALSE,
+        -errlike    => $QRFALSE,
     },
     
     {
@@ -97,6 +103,8 @@ my @td  = (
             options     => { help => 2 },
             args        => [],
         },
+        -outlike    => $QRFALSE,
+        -errlike    => $QRFALSE,
     },
     
     {
@@ -108,6 +116,8 @@ my @td  = (
             options     => { help => 3 },
             args        => [],
         },
+        -outlike    => $QRFALSE,
+        -errlike    => $QRFALSE,
     },
     
     {
@@ -117,11 +127,85 @@ my @td  = (
         -deep       => {
             branch      => 'version',
         },
+        -outlike    => $QRFALSE,
+        -errlike    => $QRFALSE,
+    },
+    
+    {
+        -case       => 'v',
+        -work       => 1,
+        -args       => [ '-v' ],
+        -deep       => {
+            branch      => 'version',
+        },
+        -outlike    => $QRFALSE,
+        -errlike    => $QRFALSE,
+    },
+    
+    {
+        -case       => 'foo',
+        -work       => 1,
+        -args       => [ 'foo' ],
+        -deep       => {
+            branch      => 'git_system',
+            args        => [ 'foo' ],
+        },
+        -outlike    => $QRFALSE,
+        -errlike    => $QRFALSE,
+    },
+    
+    {
+        -case       => '--bar',
+        -work       => 1,
+        -args       => [ '--bar' ],
+        -deep       => {
+            branch      => 'git_system',
+            args        => [ '--bar' ],
+        },
+        -outlike    => $QRFALSE,
+        -errlike    => $QRFALSE,
+    },
+    
+    {
+        -case       => '-d hoge',
+        -work       => 1,
+        -code       => q|
+            App::Rhea::_parse(qw( -d hoge ));
+            return $App::Rhea::Debug;
+        |,
+        -need       => 1,
+        -outlike    => $QRFALSE,
+        -errlike    => $QRFALSE,
+    },
+    
+    {
+        -case       => '-d hoge branch',
+        -work       => 1,
+        -args       => [ '-d', 'hoge' ],
+        -deep       => {
+            branch      => 'git_system',
+            options     => { debug => 1 },
+            args        => [ 'hoge' ],
+        },
+        -outlike    => $QRFALSE,
+        -errlike    => $QRFALSE,
+    },
+    
+    {
+        -case       => '-rx piyo',
+        -work       => 1,
+        -args       => [ '-rx', 'piyo' ],
+        -deep       => {
+            branch      => 'git_system',
+            options     => { recurse    => 1 },
+            args        => [ '-x', 'piyo' ],
+        },
+        -outlike    => $QRFALSE,
+        -errlike    => $QRFALSE,
     },
     
     
     { -done => 1 }, # # # # # # # # # # # # DONE # # # # # # # # # # # # # # #
-    
     
     
     
@@ -152,8 +236,8 @@ my $Verbose     = 0;
 #~    $Verbose++;
 
 for (@td) {
-    next if not $_->{-work};            # skip the whole case
     last if $_->{-done};                # done with all cases
+    next if not $_->{-work};            # skip the whole case
     $tc++;
     my %t           = %{ $_ };
     my $case        = $base . $t{-case};

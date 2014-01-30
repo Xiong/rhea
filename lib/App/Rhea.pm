@@ -11,8 +11,9 @@ use File::Temp          # return name and handle of a temporary file safely
     qw| tempdir |;
 use YAML::XS;           # Perl YAML Serialization using XS and libyaml
 use Getopt::Long                            # Parses command-line options
-    qw( GetOptionsFromArray ),              # not directly from @ARGV
-    qw( :config bundling );                 # enable, for instance, -xyz
+    qw( GetOptionsFromArray ),          # not directly from @ARGV
+    qw( :config bundling ),             # enable, for instance, -xyz
+    qw( require_order pass_through);    # terminate processing on non-options
 use Pod::Usage;                             # Build help text from POD
 use Pod::Find qw{pod_where};                # POD is in ...
 
@@ -40,6 +41,7 @@ my $cli       = {
     'help|h+'       => q{Try -h, -hh, -hhh for more help.},
     'version|v'     => q{Print rhea version and exit.},
     'debug|d+'      => q{Print verbose debugging info.},
+    'recurse|r'     => q{Do subcommand recursively over all submods.},
 };
 
 # Compiled regexes
@@ -95,7 +97,7 @@ sub _parse {
     
     # General action tree.
     if ( exists $opt->{debug} ){
-        $Debug          = $opt->{debug};       
+        $Debug          = $opt->{debug};
     };
     if ( exists $opt->{help} ){
         return {
@@ -111,9 +113,18 @@ sub _parse {
     }; 
     
     
+    if ( keys %$opt ){                  # got options but no rhea subcommand
+        return {
+            branch      => 'git_system',
+            options     => $opt,
+            args        => \@args,
+        };
+    }; 
+    
     # Default, fall-through.
         return {
             branch      => 'git_system',
+        #   options     => $opt,        # don't exist key to undef value
             args        => \@args,
         };
 }; ## _parse
