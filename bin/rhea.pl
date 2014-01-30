@@ -32,7 +32,7 @@ This document describes rhea version v0.0.0
 
 =head1 SYNOPSIS
 
-    $ rhea
+    $ rhea init
         # Runs a short interactive session to find structure of your server.
         # Initializes a git repo to control your Minetest configuration.
         # This is called a 'gestalt'.
