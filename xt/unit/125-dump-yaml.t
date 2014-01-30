@@ -76,9 +76,9 @@ my @td  = (
             -f $filename or die "Did not write $filename";
             open my $fh, '<', $filename or die "Failed open $filename";
             local $/        = undef;            # slurp
-            my $data        = <$fh>;
+            my $yaml        = <$fh>;
             close $fh or die "Failed close $filename";
-            my $restored    = YAML::XS::Load($data);
+            my $restored    = YAML::XS::Load($yaml);
             return $restored;
         |,
         -deep       => $href,
