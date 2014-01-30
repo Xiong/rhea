@@ -19,10 +19,11 @@ use File::Path;         # Create or remove directory trees
 use File::Temp;         # return name and handle of a temporary file safely
 
     # CPAN modules
-use Error::Base;
-use Perl6::Form;
-use Test::Trap;
-use Devel::Comments '###';
+use YAML::XS;           # Perl YAML Serialization using XS and libyaml
+use Error::Base;        # Simple structured errors with full backtrace
+use Perl6::Form;        # Print very nicely formatted blocks of text
+use Test::Trap;         # Trap exit codes, exceptions, output, etc.
+use Devel::Comments '###';  # Debug with executable smart comments to logs
 
 }
 

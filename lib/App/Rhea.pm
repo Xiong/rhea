@@ -6,8 +6,10 @@ use version; our $VERSION = qv('v0.0.0');
 
 # Core modules
 use Cwd;                # Get current working directory = cwd();
+use File::Spec;         # Portable OO methods on filenames
 use File::Temp          # return name and handle of a temporary file safely
     qw| tempdir |;
+use YAML::XS;           # Perl YAML Serialization using XS and libyaml
 
 # CPAN modules
 
@@ -22,6 +24,8 @@ use File::Temp          # return name and handle of a temporary file safely
 my $rhea_token      = q{%# };
 my $fixed_test_dir  = q{rheatmp};
 my $shrd            = q{ 2>&1};         # bash shell redirect
+my $rhea_dir            = '.rhea';
+my $yaml_fn             = 'config.yaml';
 
 # Compiled regexes
 our $QRFALSE        = qr/\A0?\z/            ;
@@ -33,8 +37,22 @@ my $git_name        = q{git};
 # Scratch
 my $CWD             ;
 $CWD                = cwd();
+#~ ### $CWD
 
 #----------------------------------------------------------------------------#
+
+#=========# EXTERNAL ROUTINE
+#
+#~     init();     # initialize rhea and, if necessary, git
+#       
+# ____
+# 
+sub init {
+    
+    _mkdir_rhea();
+    
+    
+}; ## init
 
 #=========# INTERNAL ROUTINE
 #
@@ -65,7 +83,7 @@ sub _git_system {
 #~     _git( @args );
 #       
 # Parms     : array of strings
-# Returns   : 
+# Returns   : hashref
 # Output    : STDOUT, STDERR silenced
 # 
 # Execution of arbitrary git command...
@@ -136,6 +154,98 @@ sub _setup {
     
     return $test_dir;
 }; ## _setup
+
+#=========# INTERNAL ROUTINE
+#
+#~     _dump_yaml({
+#~         filename    => $filename,
+#~         data        => $data,
+#~     });
+#       
+# Writes arbitrarily complex data structure to disk file. 
+# 
+# Parms     : 
+#       filename    : string    : name of file, relative or absolute
+#       data        : hashref   : structure to write out
+# Writes    : rhea.yaml, etc.
+# Returns   : 1
+# See also  : _load_yaml()
+# TODO: Add checks to both routines to ban aryrefs.
+# 
+sub _dump_yaml {
+    my $args        = shift;
+    my $filename    = $args->{filename}
+        or File::Spec->catfile( $rhea_dir, $yaml_fn );
+    my $data        = $args->{data}     or die 'Data required to dump yaml';
+    
+    # Serialize.
+    my $yaml        = YAML::XS::Dump($data);    # or YAML::Any
+    
+    # Write out.
+#~ $CWD                = cwd();
+#~ ### $CWD
+#~ ### $filename
+#~ ### $data
+#~ ### $yaml
+    open my $fh, '>', $filename
+        or die "Failed to open $filename for writing";
+    my $prev_fh     = select $fh;
+    local $|        = 1;                # autoflush
+    select $prev_fh;
+    print {$fh} $yaml;
+    close $fh
+    or die "Failed to close $filename";
+    
+    return 1;
+}; ## _dump_yaml
+
+#=========# INTERNAL ROUTINE
+#
+#~     $data    = _load_yaml($filename);
+#       
+# Reads arbitrarily complex data structure from disk file. 
+# 
+# Parms     : 
+#       filename    : string    : name of file, relative or absolute
+# Reads     : rhea.yaml, etc.
+# Returns   : reference : data deserialized from file
+# See also  : _dump_yaml()
+# 
+# NOTE that although our _dump_yaml() specifies dumping a hashref, 
+#   YAML will happily encode an array. 
+#   This will dereference badly as a hashref!
+# TODO: Add checks to both routines to ban aryrefs.
+# 
+sub _load_yaml {
+    my $filename        = shift
+        or File::Spec->catfile( $rhea_dir, $yaml_fn );
+    my $data            ;
+    
+    -f $filename or die "Not an existing file: $filename";
+    
+    open my $fh, '<', $filename or die "Failed open $filename";
+    local $/        = undef;            # slurp
+    my $yaml        = <$fh>;
+    close $fh or die "Failed close $filename";
+    $data           = YAML::XS::Load($yaml);
+    
+    return $data;
+}; ## _load_yaml
+
+#=========# INTERNAL ROUTINE
+#
+#~     _mkdir_rhea();     # make .rhea in $CWD if not exists
+# 
+sub _mkdir_rhea {
+    if ( not -d $rhea_dir ) {
+        mkdir $rhea_dir;
+    };
+    if ( not -d $rhea_dir ) {
+        die "Failed to mkdir $rhea_dir";
+    };
+    
+    return 1;
+}; ## _mkdir_rhea
 
 #=========# INTERNAL ROUTINE
 #
