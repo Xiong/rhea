@@ -5,6 +5,7 @@ use warnings;
 use Test::More;
 use Cwd;                # Get current working directory = cwd();
 use File::Spec;         # Portable OO methods on filenames
+use YAML::XS;           # Perl YAML Serialization using XS and libyaml
 
 use App::Rhea;
 my $QRTRUE       = $App::Rhea::QRTRUE    ;
@@ -74,9 +75,10 @@ my @td  = (
             local $/        = undef;            # slurp
             my $data        = <$fh>;
             close $fh or die "Failed close $filename";
-            return $data;
+            my $restored    = YAML::XS::Load($data);
+            return $restored;
         |,
-        -need       => $serialized,
+        -deep       => $href,
     },
     
     { -done => 1 }, # # # # # # # # # # # # DONE # # # # # # # # # # # # # # #
