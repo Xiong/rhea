@@ -55,7 +55,7 @@ my @td  = (
     # Fixed cases leave a mess; so disable in production.
     {
         -case       => 'fixed-setup',
-#~         -skip       => 1,
+        -skip       => 1,
         -code       => qq{
             `rm -rf '$fixed_test_dir' 2>&1`;            # backticks
             App::Rhea::_setup('$fixed_test_dir');
@@ -65,7 +65,7 @@ my @td  = (
     },
     {
         -case       => 'fixed-dump-load',
-#~         -skip       => 1,
+        -skip       => 1,
         -code       => q|
             App::Rhea::init();
             my $filename    = File::Spec->catfile( $rhea_dir, $yaml_fn );
@@ -83,7 +83,7 @@ my @td  = (
     # Temp cases clean up after themselves automatically.
     {
         -case       => 'temp-setup',
-        -skip       => 1,
+#~         -skip       => 1,
         -code       => q|
             my $dir = App::Rhea::_setup();
             chdir "$dir";
@@ -91,8 +91,8 @@ my @td  = (
         -need       => 1,       # perl okay
     },
     {
-        -case       => 'temp-dump-href',
-        -skip       => 1,
+        -case       => 'temp-dump-load',
+#~         -skip       => 1,
         -code       => q|
             App::Rhea::init();
             my $filename    = File::Spec->catfile( $rhea_dir, $yaml_fn );
@@ -101,11 +101,7 @@ my @td  = (
                 data        => $href,
             });
             -f $filename or die "Did not write $filename";
-            open my $fh, '<', $filename or die "Failed open $filename";
-            local $/        = undef;            # slurp
-            my $data        = <$fh>;
-            close $fh or die "Failed close $filename";
-            my $restored    = YAML::XS::Load($data);
+            my $restored    = App::Rhea::_load_yaml($filename);
             return $restored;
         |,
         -deep       => $href,
