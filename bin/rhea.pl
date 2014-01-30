@@ -33,6 +33,22 @@ This document describes rhea version v0.0.0
 =head1 SYNOPSIS
 
     $ rhea
+        # Runs a short interactive session to find structure of your server.
+        # Initializes a git repo to control your Minetest configuration.
+        # This is called a 'gestalt'.
+    
+    $ rhea config [<key>]|[--<key> <value>]
+        # Lists value of config key or puts value given.
+        # With no args, list all keys. 
+    
+    $ rhea status
+        # Iterates 'git status' over all components.
+        # Checks integrity of gestalt. 
+    
+    $ rhea <git-command>
+        # Iterates arbitrary command over all components.
+    
+    
 
 =head1 DESCRIPTION
 

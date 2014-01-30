@@ -56,6 +56,24 @@ sub init {
 
 #=========# INTERNAL ROUTINE
 #
+#~     $rh     = _parse(@args);
+#       
+# Parse a list of (command line) args and decide (generally) what to do. 
+# 
+# Parms     : @args     : array of whatnot      # command line split by shell
+# Returns   : $rh       : hashref
+#               {branch}    : string            # what to do; subcommand
+#               {options}   : hashref           # what G::L got (--all, etc.)
+#               {args}      : array of whatnot  # remaining arguments
+sub _parse {
+    my @args        = @_    or return { branch => 'init' };
+    my $rh              ;
+    
+    return $rh;
+}; ## _parse
+
+#=========# INTERNAL ROUTINE
+#
 #~     _git_system( @args );
 #       
 # Parms     : array of strings
