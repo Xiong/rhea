@@ -87,7 +87,7 @@ sub init {
 # Pass everything else to git... if that is our fate. 
 # 
 sub _parse {
-    my @args            = @_    or return { branch => 'usage' };
+    my @args            = @_    || return { branch => 'usage' };
     my @opt_setup       = keys %$cli;
     my $opt             = {};   # option keys and maybe config
         
@@ -143,7 +143,7 @@ sub _parse {
 # We do not get any output from the command; the user sees it directly. 
 # 
 sub _git_system {
-    my @args    = @_ or ();
+    my @args    = @_ || ();
 #~     my $cmd     = join q{ }, @args;
     
     system $git_name, @args;
@@ -165,7 +165,7 @@ sub _git_system {
 #   ... with STDOUT, STDERR captured.
 # 
 sub _git {
-    my @args    = @_ or ();
+    my @args    = @_ || ();
     my $cmd     = join q{ }, $git_name, @args, $shrd;
     
     my $output  = `$cmd`;
@@ -250,7 +250,7 @@ sub _setup {
 sub _dump_yaml {
     my $args        = shift;
     my $filename    = $args->{filename}
-        or File::Spec->catfile( $rhea_dir, $yaml_fn );
+        || File::Spec->catfile( $rhea_dir, $yaml_fn );
     my $data        = $args->{data}     or die 'Data required to dump yaml';
     
     # Serialize.
@@ -293,7 +293,7 @@ sub _dump_yaml {
 # 
 sub _load_yaml {
     my $filename        = shift
-        or File::Spec->catfile( $rhea_dir, $yaml_fn );
+        || File::Spec->catfile( $rhea_dir, $yaml_fn );
     my $data            ;
     
     -f $filename or die "Not an existing file: $filename";
