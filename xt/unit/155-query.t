@@ -65,17 +65,19 @@ my @td  = (
         -need       => 'hogepiyo',
     },
     
-    { -done => 1 }, # # # # # # # # # # # # DONE # # # # # # # # # # # # # # #
-    
     {
-        -case       => 'null-usage',
+        -case       => 'null',
+        -code       => q|
+            $stdin      = '',
+            App::Rhea::_query();
+        |,
         -work       => 1,
-        -deep       => {
-            branch      => 'usage',
-        },
+        -deep       => {},          # returns $cfg hashref
         -outlike    => $QRFALSE,
         -errlike    => $QRFALSE,
     },
+    
+    { -done => 1 }, # # # # # # # # # # # # DONE # # # # # # # # # # # # # # #
     
     
     
