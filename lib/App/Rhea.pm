@@ -20,7 +20,7 @@ use Pod::Find qw{pod_where};                # POD is in ...
 # CPAN modules
 
 # Alternate uses
-use Devel::Comments '###', ({ -file => 'debug.log' });                   #~
+#~ use Devel::Comments '###', ({ -file => 'debug.log' });                   #~
 
 ## use
 #============================================================================#

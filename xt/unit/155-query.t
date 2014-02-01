@@ -114,6 +114,122 @@ my @td  = (
         -errlike    => $QRFALSE,
     },
     
+    {
+        -case       => 'dog-color-red',
+        -work       => 1,
+        -argv       => [{
+            query       => q{What color is your dog?},
+            value       => q{blue},
+        }],
+        -code       => q|
+            $stdin      = 'red',    # faked user input
+            seek STDIN, 0, 0;
+            my $args    = shift @ARGV;
+            my $value   = App::Rhea::_query($args);
+            return $value;
+        |,
+        -need       => 'red',
+        -outlike    => words(qw( dog blue )),
+        -errlike    => $QRFALSE,
+    },
+    
+    {
+        -case       => 'dog-color-accept',
+        -work       => 1,
+        -argv       => [{
+            query       => q{What color is your dog?},
+            value       => q{blue},
+        }],
+        -code       => q|
+            $stdin      = "\n",    # faked user input
+            seek STDIN, 0, 0;
+            my $args    = shift @ARGV;
+            my $value   = App::Rhea::_query($args);
+            return $value;
+        |,
+        -need       => 'blue',
+        -outlike    => words(qw( dog blue )),
+        -errlike    => $QRFALSE,
+    },
+    
+    {
+        -case       => 'dog-color-help-red',
+        -work       => 1,
+        -argv       => [{
+            query       => q{What color is your dog?},
+            value       => q{blue},
+        }],
+        -code       => q|
+            $stdin      = "?\nred",    # faked user input
+            seek STDIN, 0, 0;
+            my $args    = shift @ARGV;
+            my $value   = App::Rhea::_query($args);
+            return $value;
+        |,
+        -need       => 'red',
+        -outlike    => words(qw( dog sorry help dog blue )),
+        -errlike    => $QRFALSE,
+    },
+    
+    {
+        -case       => 'dog-color-help-accept',
+        -work       => 1,
+        -argv       => [{
+            query       => q{What color is your dog?},
+            value       => q{blue},
+        }],
+        -code       => q|
+            $stdin      = "?\n\n",    # faked user input
+            seek STDIN, 0, 0;
+            my $args    = shift @ARGV;
+            my $value   = App::Rhea::_query($args);
+            return $value;
+        |,
+        -need       => 'blue',
+        -outlike    => words(qw( dog sorry help dog blue )),
+        -errlike    => $QRFALSE,
+    },
+    
+    {
+        -case       => 'password-valid',
+        -work       => 1,
+        -argv       => [{
+            query       => q{Enter your password.},
+            valid       => q<[[:alpha:]]{3,8}>,
+            help        => q{Passwords required; must be 3 to 8 letters.},
+        }],
+        -code       => q|
+            $stdin      = "albert\n",    # faked user input
+            seek STDIN, 0, 0;
+            my $args    = shift @ARGV;
+            my $value   = App::Rhea::_query($args);
+            return $value;
+        |,
+        -need       => 'albert',
+        -outlike    => words(qw( enter password albert )),
+        -errlike    => $QRFALSE,
+    },
+    
+    {
+        -case       => 'password-not-valid',
+        -work       => 1,
+        -argv       => [{
+            query       => q{Enter your password.},
+            valid       => q<[[:alpha:]]{3,8}>,
+            help        => q{Passwords required; must be 3 to 8 letters.},
+        }],
+        -code       => q|
+            $stdin      = "777\nalbert\n",    # faked user input
+            seek STDIN, 0, 0;
+            my $args    = shift @ARGV;
+            my $value   = App::Rhea::_query($args);
+            return $value;
+        |,
+        -need       => 'albert',
+        -outlike    => words(qw( password invalid required letters albert )),
+        -errlike    => $QRFALSE,
+    },
+    
     { -done => 1 }, # # # # # # # # # # # # DONE # # # # # # # # # # # # # # #
     
     

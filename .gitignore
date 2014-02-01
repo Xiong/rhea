@@ -14,6 +14,7 @@ Makefile.old
 MANIFEST.bak
 META.yml
 MYMETA.yml
+MYMETA.json
 nytprof.out
 pm_to_blib
 
@@ -27,6 +28,7 @@ rheatmp/
 tmp/
 *.tmp
 *.pm.html
+debug.log
 
 # Don't track internal symlink -- will blow up
 t
