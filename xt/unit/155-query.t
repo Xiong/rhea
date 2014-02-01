@@ -69,7 +69,8 @@ my @td  = (
         -case       => 'self-check-reload',
         -work       => 1,
         -code       => q|
-            $stdin      = qq{foo\nbar},
+            $stdin      = qq{foo\nbar};
+            seek STDIN, 0, 0;
             my $foo     ;
             my $bar     ;
             $foo        = <STDIN>;
