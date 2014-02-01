@@ -20,7 +20,7 @@ use Pod::Find qw{pod_where};                # POD is in ...
 # CPAN modules
 
 # Alternate uses
-#~ use Devel::Comments '###', ({ -file => 'debug.log' });                   #~
+use Devel::Comments '###', ({ -file => 'debug.log' });                   #~
 
 ## use
 #============================================================================#
@@ -128,6 +128,64 @@ sub _parse {
             args        => \@args,
         };
 }; ## _parse
+
+#=========# INTERNAL ROUTINE
+#
+#~     $value          = _query({
+#~         query           => $query,
+#~         value           => $value,
+#~         valid           => $valid,
+#~         help            => $help,
+#~     });
+#       
+# Purpose   : Interrogate user until a value is obtained.
+# Parms     : 
+#       query   : string    : question text including '?' if needed
+#       value   : scalar    : default value suggested to user
+#       valid   : regex     : value must match this
+#       help    : string    : text displayed if user demands help
+# Returns   : $value    : scalar
+# See also  : TODO: _dialog()
+# 
+# Offer query and value to user at console until success. 
+# If user types '?', display help and retry.
+# If user types nothing, accept default value and succeed.
+# 
+sub _query {
+    my $args        = shift;
+    ### $args
+    my $query       = $args->{query}    or return undef;    # nothing asked
+    my $value       = $args->{value}    || q{};
+    my $valid       = $args->{valid};
+    my $help        = $args->{help}     || 'Sorry, no help for this.';
+    my $help_demand = '?';
+    
+    local $|        = 1;                # autoflush
+    
+    while (1) {
+        print $query, ' [', $value, '] ';
+        my $in      = <STDIN>;
+        ### $in
+        chomp $in;
+        if ( $in eq $help_demand ) {
+            say $help;
+            next;
+        };
+        if ( $in eq q{} ) {
+            $in     = $value;
+        };
+        if ( $valid and not $in =~ /$valid/ ) {
+            say 'Sorry, invalid value.';
+            say $help;
+            next;
+        };
+        $value  = $in;
+        say $value;
+        last;
+    };
+    
+    return $value;
+}; ## _query
 
 #=========# INTERNAL ROUTINE
 #

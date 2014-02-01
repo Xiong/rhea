@@ -66,13 +66,47 @@ my @td  = (
     },
     
     {
+        -case       => 'self-check-reload',
+        -work       => 1,
+        -code       => q|
+            $stdin      = qq{foo\nbar},
+            my $foo     ;
+            my $bar     ;
+            $foo        = <STDIN>;
+            chomp $foo;
+            $bar        = <STDIN>;
+            chomp $bar;
+            return $foo . $bar;
+        |,
+        -need       => 'foobar',
+    },
+    
+    {
         -case       => 'null',
+#~         -work       => 1,
         -code       => q|
             $stdin      = '',
-            App::Rhea::_query();
+            my $value   = App::Rhea::_query();
+            return $value;
         |,
-        -work       => 1,
-        -deep       => {},          # returns $cfg hashref
+        -undef      => 1,           # required to return undef
+        -outlike    => $QRFALSE,
+        -errlike    => $QRFALSE,
+    },
+    
+    {
+        -case       => 'magic-word',
+#~         -work       => 1,
+        -argv       => [{
+            query       => q{What's the word?},
+        }],
+        -code       => q|
+            my $args    = shift @ARGV;
+            $stdin      = 'Thunderbird',    # faked user input
+            my $value   = App::Rhea::_query($args);
+            return $value;
+        |,
+        -need       => 'Thunderbird',
         -outlike    => $QRFALSE,
         -errlike    => $QRFALSE,
     },
@@ -121,9 +155,11 @@ for (@td) {
         # per-case variables
         my $code        = $t{-code};    # execute this code
         my $args        = $t{-args};    # ... with these args
+        my $argv        = $t{-argv};    # ... and/or with this @ARGV
         my $die         = $t{-die};     # must fail
         my $like        = $t{-like};    # normal return value regex supplied
         my $need        = $t{-need};    # exact return value supplied
+        my $undef       = $t{-undef};   # undef return value required
         my $deep        = $t{-deep};    # traverse structure (e.g., hashref)
         my $outlike     = $t{-outlike}; # STDOUT regex supplied
         my $errlike     = $t{-errlike}; # STDERR regex supplied
@@ -140,6 +176,9 @@ for (@td) {
         else {
             @args       = ();               # otherwise clear global
         };
+        if ( $argv and ref $argv ) {        # set if okay to deref
+            @ARGV       = @$argv;
+        }
         
         # test execution
         if ( $code ) {
@@ -171,6 +210,13 @@ for (@td) {
             $got            = $rv[0];
             $want           = $need;
             is( $got, $want, $diag );
+        };
+        if ( defined $undef ) {
+            $diag           = 'return-undef';
+            $got            = $rv[0];
+            $want           = ! defined $got;
+            ok( $want, $diag )
+                or note("Got: $got");
         };
         if ( defined $deep ) {
             $diag           = 'return-is-deeply';
