@@ -84,9 +84,10 @@ my @td  = (
     
     {
         -case       => 'null',
-#~         -work       => 1,
+        -work       => 1,
         -code       => q|
             $stdin      = '',
+            seek STDIN, 0, 0;
             my $value   = App::Rhea::_query();
             return $value;
         |,
@@ -97,18 +98,19 @@ my @td  = (
     
     {
         -case       => 'magic-word',
-#~         -work       => 1,
+        -work       => 1,
         -argv       => [{
             query       => q{What's the word?},
         }],
         -code       => q|
-            my $args    = shift @ARGV;
             $stdin      = 'Thunderbird',    # faked user input
+            seek STDIN, 0, 0;
+            my $args    = shift @ARGV;
             my $value   = App::Rhea::_query($args);
             return $value;
         |,
         -need       => 'Thunderbird',
-        -outlike    => $QRFALSE,
+        -outlike    => words(qw( word Thunderbird )),
         -errlike    => $QRFALSE,
     },
     
