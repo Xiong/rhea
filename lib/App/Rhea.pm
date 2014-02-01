@@ -87,7 +87,7 @@ sub init {
 # Pass everything else to git... if that is our fate. 
 # 
 sub _parse {
-    my @args            = @_    || return { branch => 'usage' };
+    my @args            = @_    or return { branch => 'usage' };
     my @opt_setup       = keys %$cli;
     my $opt             = {};   # option keys and maybe config
         
@@ -143,8 +143,7 @@ sub _parse {
 # We do not get any output from the command; the user sees it directly. 
 # 
 sub _git_system {
-    my @args    = @_ || ();
-#~     my $cmd     = join q{ }, @args;
+    my @args    = @_ or die 'Attempt to invoke git with no subcommand';
     
     system $git_name, @args;
     
@@ -165,7 +164,7 @@ sub _git_system {
 #   ... with STDOUT, STDERR captured.
 # 
 sub _git {
-    my @args    = @_ || ();
+    my @args    = @_ or die 'Attempt to invoke git with no subcommand';
     my $cmd     = join q{ }, $git_name, @args, $shrd;
     
     my $output  = `$cmd`;
