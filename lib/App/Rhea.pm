@@ -131,6 +131,20 @@ sub _parse {
 
 #=========# INTERNAL ROUTINE
 #
+#~     $cfg     = _dialog($cfg_default);
+#       
+# Load an application-specific "conversation" file 
+#   and step user through it until all questions are answered.
+# 
+sub _dialog {
+    my $cfg_default     = shift;
+    my $cfg             = {};
+    
+    return $cfg;
+}; ## _dialog
+
+#=========# INTERNAL ROUTINE
+#
 #~     $value          = _query({
 #~         query           => $query,
 #~         value           => $value,

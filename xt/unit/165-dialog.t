@@ -87,7 +87,7 @@ my @td  = (
     {
         -case       => 'magic-word',
         -work       => 1,
-        -argv       => [{
+        -args       => [{
             query       => q{What's the word?},
         }],
         -code       => q|
@@ -109,7 +109,7 @@ my @td  = (
     {
         -case       => 'mock-check-dog-red',
         -work       => 1,
-        -argv       => [{
+        -args       => [{
             query       => q{What color is your dog?},
             value       => q{blue},
         }],
@@ -126,6 +126,12 @@ my @td  = (
         -mocklike   => words(qw( color dog )),
         -outlike    => $QRFALSE,
         -errlike    => $QRFALSE,
+    },
+    
+    {
+        -case       => 'null',
+        -work       => 1,
+        -reftype    => 'HASH',
     },
     
     { -done => 1 }, # # # # # # # # # # # # DONE # # # # # # # # # # # # # # #
@@ -173,11 +179,11 @@ for (@td) {
         # per-case variables
         my $code        = $t{-code};    # execute this code
         my $args        = $t{-args};    # ... with these args
-        my $argv        = $t{-argv};    # ... and/or with this @ARGV
         my $die         = $t{-die};     # must fail
         my $like        = $t{-like};    # normal return value regex supplied
         my $need        = $t{-need};    # exact return value supplied
         my $undef       = $t{-undef};   # undef return value required
+        my $reftype     = $t{-reftype}; # type of ref of return value
         my $deep        = $t{-deep};    # traverse structure (e.g., hashref)
         my $outlike     = $t{-outlike}; # STDOUT regex supplied
         my $errlike     = $t{-errlike}; # STDERR regex supplied
@@ -186,19 +192,24 @@ for (@td) {
         my $punt        = $t{-punt};    # application-specific checks
                 
         # set up code under test
-        if ( not $code ) {
-            $code       = $unit;            # "sticky"
-        };
-        if ( $args and ref $args ) {        # concatenate if okay to deref
+        # Four-outcome tree
+        my $cf      = !!$code;
+        my $af      = !!( $args and ref $args );
+        if    (  $cf &&  $af ) {
+            @ARGV       = @$args;
+        } 
+        elsif (  $cf && !$af ) {
+            @args       = ();
+        } 
+        elsif ( !$cf &&  $af ) {
             @args       = @$args;
-            $code       .= q{(@args)};
-        }
-        else {
-            @args       = ();               # otherwise clear global
-        };
-        if ( $argv and ref $argv ) {        # set if okay to deref
-            @ARGV       = @$argv;
-        }
+            $code       = $unit . q{(@args)};
+        } 
+        elsif ( !$cf && !$af ) {
+            @args       = ();
+            $code       = $unit . q{()};
+        } 
+        else { die 'Fifth element!' };
         
         # test execution
         if ( $code ) {
@@ -237,6 +248,12 @@ for (@td) {
             $want           = ! defined $got;
             ok( $want, $diag )
                 or note("Got: $got");
+        };
+        if ( defined $reftype ) {
+            $diag           = 'return-reftype';
+            $got            = ref $rv[0];
+            $want           = $reftype;
+            is( $got, $want, $diag );
         };
         if ( defined $deep ) {
             $diag           = 'return-is-deeply';
