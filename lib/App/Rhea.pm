@@ -20,7 +20,7 @@ use Pod::Find qw{pod_where};                # POD is in ...
 # CPAN modules
 
 # Alternate uses
-#~ use Devel::Comments '###', ({ -file => 'debug.log' });                   #~
+use Devel::Comments '###', ({ -file => 'debug.log' });                   #~
 
 ## use
 #============================================================================#
@@ -131,6 +131,99 @@ sub _parse {
 
 #=========# INTERNAL ROUTINE
 #
+#~     $cfg     = _dialog();
+#       
+# Load an application-specific "conversation" file 
+#   and step user through it until all questions are answered.
+# 
+sub _dialog {
+    my $cfg             = {};
+    my %got             = ();
+    my $dialog          = _load_dialog() or return $cfg;
+    ### $dialog
+    
+    %got    =  map { $_->{key}, _query($_) } @$dialog;
+    %$cfg   =  ( %$cfg, %got );
+    
+    return $cfg;
+}; ## _dialog
+
+#=========# INTERNAL ROUTINE
+#
+#~     $value          = _query({
+#~         query           => $query,
+#~         default         => $default,
+#~         resort          => $resort,
+#~         valid           => $valid,
+#~         help            => $help,
+#~     });
+#       
+# Purpose   : Interrogate user until a value is obtained.
+# Parms     : 
+#       query   : string    : question text including '?' if needed
+#       default : coderef   : calculate default value suggested to user
+#       resort  : scalar    : last resort default
+#       valid   : regex     : returned value must match this
+#       help    : string    : text displayed if user demands help
+# Returns   : $value    : scalar
+# See also  : TODO: _dialog()
+# 
+# Offer query and default value to user at console until success. 
+# If user types '?', display help and retry.
+# If user types nothing, accept default value and succeed.
+# 
+sub _query {
+    my $args        = shift;
+    ### $args
+    my $query       = $args->{query}    or return undef;    # nothing asked
+    my $default     = $args->{default}  || q{};
+    my $resort      = $args->{resort}   || q{};
+    my $valid       = $args->{valid};
+    my $help        = $args->{help}     || 'Sorry, no help for this.';
+    
+    my $help_demand = '?';    
+    local $|        = 1;                # autoflush
+    my $value       ;
+    
+    # Calculated default value.
+    if    ( my $v   = eval $default ) {
+        $value          = $v;
+    } 
+    elsif ( defined $resort ) {
+        $value          = $resort;
+    } 
+    else {
+        $value          = q{};
+    };
+    
+    # Insist. Let user hard break if he don't like it.
+    while (1) {
+        print $query, ' [', $value, '] ';
+        my $in      = <STDIN>;
+        ### $in
+        chomp $in;
+        if ( $in eq $help_demand ) {
+            say $help;
+            next;
+        };
+        if ( $in eq q{} ) {
+            $in     = $value;
+        };
+        if ( $valid and not $in =~ /$valid/ ) {
+            say 'Sorry, invalid value.';
+            say $help;
+            next;
+        };
+        $value  = $in;
+        say $value;
+        last;
+    };
+    
+    return $value;
+}; ## _query
+
+#=========# INTERNAL ROUTINE
+#
 #~     _git_system( @args );
 #       
 # Parms     : array of strings
@@ -143,8 +236,7 @@ sub _parse {
 # We do not get any output from the command; the user sees it directly. 
 # 
 sub _git_system {
-    my @args    = @_ or ();
-#~     my $cmd     = join q{ }, @args;
+    my @args    = @_ or die 'Attempt to invoke git with no subcommand';
     
     system $git_name, @args;
     
@@ -165,7 +257,7 @@ sub _git_system {
 #   ... with STDOUT, STDERR captured.
 # 
 sub _git {
-    my @args    = @_ or ();
+    my @args    = @_ or die 'Attempt to invoke git with no subcommand';
     my $cmd     = join q{ }, $git_name, @args, $shrd;
     
     my $output  = `$cmd`;
@@ -250,7 +342,7 @@ sub _setup {
 sub _dump_yaml {
     my $args        = shift;
     my $filename    = $args->{filename}
-        or File::Spec->catfile( $rhea_dir, $yaml_fn );
+        || File::Spec->catfile( $rhea_dir, $yaml_fn );
     my $data        = $args->{data}     or die 'Data required to dump yaml';
     
     # Serialize.
@@ -293,7 +385,7 @@ sub _dump_yaml {
 # 
 sub _load_yaml {
     my $filename        = shift
-        or File::Spec->catfile( $rhea_dir, $yaml_fn );
+        || File::Spec->catfile( $rhea_dir, $yaml_fn );
     my $data            ;
     
     -f $filename or die "Not an existing file: $filename";
