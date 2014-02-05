@@ -119,7 +119,7 @@ my @td  = (
         -work       => 1,
         -argv       => [{
             query       => q{What color is your dog?},
-            value       => q{blue},
+            resort      => q{blue},
         }],
         -code       => q|
             $stdin      = 'red',    # faked user input
@@ -138,7 +138,7 @@ my @td  = (
         -work       => 1,
         -argv       => [{
             query       => q{What color is your dog?},
-            value       => q{blue},
+            resort      => q{blue},
         }],
         -code       => q|
             $stdin      = "\n",    # faked user input
@@ -157,7 +157,7 @@ my @td  = (
         -work       => 1,
         -argv       => [{
             query       => q{What color is your dog?},
-            value       => q{blue},
+            resort      => q{blue},
         }],
         -code       => q|
             $stdin      = "?\nred",    # faked user input
@@ -176,7 +176,7 @@ my @td  = (
         -work       => 1,
         -argv       => [{
             query       => q{What color is your dog?},
-            value       => q{blue},
+            resort      => q{blue},
         }],
         -code       => q|
             $stdin      = "?\n\n",    # faked user input

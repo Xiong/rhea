@@ -46,15 +46,16 @@ my $mockstr     = q{};  # scratch string available for mocking
 # MOCKS
 no warnings 'redefine';
 
-local *App::Rhea::_query
+*App::Rhea::_query
 = sub {
-    $mockout->{_query}{args}     = shift;
-    return $mockin->{_query}{return};
+    my $args        = shift;
+    my $value       = $args->{resort};   # always accept default
+    return $value;
 }; ## mock _query
 
-local *App::Rhea::_load_dialog
+*App::Rhea::_load_dialog
 = sub {
-    
+        return $mockin->{aref};
 }; ## mock _query
 
 use warnings;
@@ -89,41 +90,35 @@ my @td  = (
         -work       => 1,
         -args       => [{
             query       => q{What's the word?},
+            resort      => 'Thunderbird',
         }],
         -code       => q|
             undef %$mockin;
             undef %$mockout;
-            $mockin->{_query}{return}   = 'Thunderbird';    # return from mock
             my $args    = shift @ARGV;
             my $value   = App::Rhea::_query($args);
-            $mockstr    = $mockout->{_query}{args}{query};  # args to mock
             return $value;
         |,
         -need       => 'Thunderbird',
-        -mocklike   => words(qw( the word )),
-#~         -mockdeep   => $QRFALSE,    # from all mocks!
         -outlike    => $QRFALSE,
         -errlike    => $QRFALSE,
     },
     
     {
-        -case       => 'mock-check-dog-red',
+        -case       => 'mock-check-dog-blue',
         -work       => 1,
         -args       => [{
             query       => q{What color is your dog?},
-            value       => q{blue},
+            resort      => q{blue},
         }],
         -code       => q|
             undef %$mockin;
             undef %$mockout;
-            $mockin->{_query}{return}     = 'red',          # return from mock
             my $args    = shift @ARGV;
             my $value   = App::Rhea::_query($args);
-            $mockstr    = $mockout->{_query}{args}{query};  # args to mock
             return $value;
         |,
-        -need       => 'red',
-        -mocklike   => words(qw( color dog )),
+        -need       => 'blue',
         -outlike    => $QRFALSE,
         -errlike    => $QRFALSE,
     },
@@ -135,25 +130,55 @@ my @td  = (
     },
     
     {
-        -case       => 'simple',
-#~         -work       => 1,
+        -case       => 'today',
+        -work       => 1,
         -args       => [
             {
                 key     => 'today',
                 query   => 'What is today?',
-                value   => 'Tuesday',
+                resort  => 'Tuesday',
             },
         ],
         -code       => q|
             undef %$mockin;
             undef %$mockout;
-            $mockin->{_query}{return}   = 'Thunderbird';    # return from mock
-            my $args    = shift @ARGV;
-            my $cfg   = App::Rhea::_dialog();               # unit under test
-            $mockstr    = $mockout->{_query}{args}{query};  # args to mock
-            return $value;            
+            $mockin->{aref}     = \@ARGV;
+            return App::Rhea::_dialog();
         |,
-        -reftype    => 'HASH',
+        -deep       => {
+            today       => 'Tuesday',
+        },
+        -outlike    => $QRFALSE,
+        -errlike    => $QRFALSE,
+    },
+    
+    {
+        -case       => 'hoge-piyo',
+        -work       => 1,
+        -args       => [
+            {
+                key     => 'hoge',
+                query   => 'What is hoge?',
+                resort  => 'HOGE',
+            },
+            {
+                key     => 'piyo',
+                query   => 'What is piyo?',
+                resort  => 'PIYO',
+            },
+        ],
+        -code       => q|
+            undef %$mockin;
+            undef %$mockout;
+            $mockin->{aref}     = \@ARGV;
+            return App::Rhea::_dialog();
+        |,
+        -deep       => {
+            hoge        => 'HOGE',
+            piyo        => 'PIYO',
+        },
+        -outlike    => $QRFALSE,
+        -errlike    => $QRFALSE,
     },
     
     { -done => 1 }, # # # # # # # # # # # # DONE # # # # # # # # # # # # # # #
@@ -325,7 +350,7 @@ for (@td) {
             note( 'explain: ', explain \@rv         );
             note( ''                                );
         };
-        if ( $Verbose >= 1 ) {
+        if ( $Verbose >= 2 ) {
             note( 'explain: ', explain \$mockout    );
             note( ''                                );
         };
